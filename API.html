@@ -179,7 +179,7 @@
                         let newArray = returnData.filter(function (el) {
                             return el.StopName.Zh_tw == startName.name && el.PlateNumb !== '-1';
                         });
-                        console.log(newArray);
+                      
                         if (newArray.length > 0) {
 
                             var lowest = Number.POSITIVE_INFINITY;
@@ -203,26 +203,7 @@
                         } else {
 
                             $('.carNum').hide();
-                            $('.carStatus').text('未發車');
                             $('.carStatus').removeClass('hasTime');
-
-                            // $.ajax({//每日營運時刻表
-                            //     type: "GET",
-                            //     url: 'https://tdx.transportdata.tw/api/basic/v2/Bus/DailyTimeTable/InterCity/' + busNum.name,
-                            //     headers: {
-                            //         "authorization": "Bearer " + accesstoken.access_token,
-                            //     },
-                            //     async: false,
-                            //     success: function (data) {
-                            //         let allTime=[];
-                            //         console.log(data);
-                            //         for(let i=0;i<data.length;i++){
-                            //             allTime.push(data[i].Timetables[0].StopTimes[0].ArrivalTime);
-                            //         }
-                            //         console.log(allTime);
-                            //     },
-                            //     error: function (xhr, textStatus, thrownError) { }
-                            // });
 
                             $.ajax({//班表資料
                                 type: "GET",
@@ -315,7 +296,7 @@
                     cityName_End = address.results[0].address_components.slice(-4)[1].long_name; //縣市 
                 }
 
-                $('.place.end').text(address.results[0].address_components.slice(-4)[0].long_name);
+                $('.place.end').text(address.results[0].address_components.slice(-4)[0].long_name);//區域
                 weatherEnd();//溫度、天氣
             }
         });
@@ -377,12 +358,10 @@
                         $('.temperature.now').text(res.records.Station[number].WeatherElement.AirTemperature);//AirTemperature
                         img(res.records.Station[number].WeatherElement.Weather, 'now');//img
                         console.log(res.records.Station[number].WeatherElement.Weather);
-                        alert('379');
+                       
                     } else {
                         startOtherAPI();
-                        alert('382');
                     }
-                    console.log(res.records.Station[number]);
 
                 }
             });
@@ -400,7 +379,8 @@
                                 res.records.Station[i].GeoInfo.TownName == $('.place.now').text()) {
                                 $('.temperature.now').text(res.records.Station[i].WeatherElement.AirTemperature);//AirTemperature
                                 img(res.records.Station[i].WeatherElement.Weather, 'now');//img
-                                alert('402');
+                                console.log(res.records.Station[i].WeatherElement.Weather,res.records.Station[i].WeatherElement.AirTemperature);
+                                
                             }
                         }
                     }
@@ -415,20 +395,37 @@
                 method: "GET",
                 datatype: "json",
                 success: function (res) {
+
+                    let number = '';
+                    let text = $('.place.end').text();
+
+                    switch (text) {
+                        case "大同區": $('.place.now').text('中正區');
+                            break;
+                        case "萬華區": $('.place.now').text('中正區');
+                            break;
+                        case '中山區': $('.place.now').text('松山區');
+                            break;
+                    }
+
                     for (let i = 0; i < res.records.Station.length; i++) {
                         if (res.records.Station[i].GeoInfo.CountyName == cityName_End &&
                             res.records.Station[i].GeoInfo.TownName == $('.place.end').text()) {
-                            // console.log('A0003 end', res.records.Station[i]);
-                            $('.temperature.end').text(res.records.Station[i].WeatherElement.AirTemperature);//AirTemperature
-                            img(res.records.Station[i].WeatherElement.Weather, 'end');//img
-                            return
-                        } else if (res.records.Station[i].GeoInfo.CountyName == cityName_End &&
-                            res.records.Station[i].GeoInfo.TownName != $('.place.end').text()) {
-                            endOtherAPI();
-                            return
+                            number = i;
                         }
                     }
-                    console.log(cityName_End);
+
+
+                    if (number != '') {
+                        $('.temperature.end').text(res.records.Station[number].WeatherElement.AirTemperature);//AirTemperature
+                        img(res.records.Station[number].WeatherElement.Weather, 'end');//img
+                        console.log(res.records.Station[number].WeatherElement.Weather);
+                        return
+                    } else {
+                        endOtherAPI();
+                        return
+                    }
+                  
                 }
             });
 
@@ -440,6 +437,7 @@
                     datatype: "json",
                     success: function (res) {
                         for (let i = 0; i < res.records.Station.length; i++) {
+
                             if (res.records.Station[i].GeoInfo.CountyName == cityName_End &&
                                 res.records.Station[i].GeoInfo.TownName == $('.place.end').text()) {
                                 // console.log('A0001 end', res.records.Station[i]);

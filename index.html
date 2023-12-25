@@ -18,8 +18,7 @@
         </div>
         <div class="down">
           <p>
-            <input type="text" class="busNm" placeholder="請輸入車號" oninput="value=value.replace(/[^\d]/g,'')"
-              value="1815" />
+            <input type="text" class="busNm" placeholder="請輸入車號" oninput="value=value.replace(/[^\d]/g,'')" />
           </p>
           <div class="pop"></div>
           <!-- <input type="text" class="stopName" placeholder="請輸入站名" value="華山文創園區"> -->
@@ -111,15 +110,14 @@
         let end = { name: endName,position: endPosition };
         let stopD = $('input[type="radio"]:checked').val() % 2;
         let d = { direction: stopD };
-        debugger
-        console.log(stopD);
+       
         localStorage.setItem("number", JSON.stringify(Num));
         localStorage.setItem("startName", JSON.stringify(start));
         localStorage.setItem("endName", JSON.stringify(end));
         localStorage.setItem("direction", JSON.stringify(d));
 
 
-        window.location = "https://github.com/YowRu/kingbus/API.html";
+        window.location = "http://localhost:8888/23.12.26_kingbus/API.html";
       } else if ($('.busNm').val() == '') {
         alert('請填寫 車號');
       } else if (!$('input[type="radio"]:checked').length > 0) {

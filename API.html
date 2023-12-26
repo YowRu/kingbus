@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +10,6 @@
     <link rel="stylesheet" href="css/API.css">
     <title>國光客運</title>
 </head>
-
 <body id="fullScreen">
     <header>
         <div class="left">
@@ -355,7 +353,7 @@
 
 
                     if (number != '') {
-                        $('.temperature.now').text(res.records.Station[number].WeatherElement.AirTemperature);//AirTemperature
+                        $('.temperature.now').text(Math.round(res.records.Station[number].WeatherElement.AirTemperature));//AirTemperature
                         img(res.records.Station[number].WeatherElement.Weather, 'now');//img
                         console.log(res.records.Station[number].WeatherElement.Weather);
                        
@@ -377,7 +375,7 @@
                         for (let i = 0; i < res.records.Station.length; i++) {
                             if (res.records.Station[i].GeoInfo.CountyName == cityName_Start &&
                                 res.records.Station[i].GeoInfo.TownName == $('.place.now').text()) {
-                                $('.temperature.now').text(res.records.Station[i].WeatherElement.AirTemperature);//AirTemperature
+                                $('.temperature.now').text(Math.round(res.records.Station[i].WeatherElement.AirTemperature));//AirTemperature
                                 img(res.records.Station[i].WeatherElement.Weather, 'now');//img
                                 console.log(res.records.Station[i].WeatherElement.Weather,res.records.Station[i].WeatherElement.AirTemperature);
                                 
@@ -417,7 +415,7 @@
 
 
                     if (number != '') {
-                        $('.temperature.end').text(res.records.Station[number].WeatherElement.AirTemperature);//AirTemperature
+                        $('.temperature.end').text(Math.round(res.records.Station[number].WeatherElement.AirTemperature));//AirTemperature
                         img(res.records.Station[number].WeatherElement.Weather, 'end');//img
                         console.log(res.records.Station[number].WeatherElement.Weather);
                         return
@@ -441,7 +439,7 @@
                             if (res.records.Station[i].GeoInfo.CountyName == cityName_End &&
                                 res.records.Station[i].GeoInfo.TownName == $('.place.end').text()) {
                                 // console.log('A0001 end', res.records.Station[i]);
-                                $('.temperature.end').text(res.records.Station[i].WeatherElement.AirTemperature);//AirTemperature
+                                $('.temperature.end').text(Math.round(res.records.Station[i].WeatherElement.AirTemperature));//AirTemperature
                                 img(res.records.Station[i].WeatherElement.Weather, 'end');//img
                                 return
                             }

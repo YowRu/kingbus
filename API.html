@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
     <link rel="stylesheet" href="css/API.css">
     <title>國光客運</title>
 </head>
+
 <body id="fullScreen">
     <header>
         <div class="left">
@@ -33,7 +35,7 @@
             <div class="item">
                 <div class="content">
                     <div class="top">
-                        <div class="temperature now">--</div>
+                        <div class="temperature now"></div>
                         <img src="" alt="" class="img now">
                     </div>
                     <div class="down">
@@ -41,12 +43,12 @@
                         <div class="text">53</div>
                     </div>
                 </div>
-                <div class="place now">--</div>
+                <div class="place now"></div>
             </div>
             <div class="item">
                 <div class="content">
                     <div class="top">
-                        <div class="temperature end">--</div>
+                        <div class="temperature end"></div>
                         <img src="" alt="" class="img end">
                     </div>
                     <div class="down">
@@ -54,7 +56,7 @@
                         <div class="text">51</div>
                     </div>
                 </div>
-                <div class="place end" id="placeEnd">--</div>
+                <div class="place end" id="placeEnd"></div>
             </div>
         </div>
     </div>
@@ -156,13 +158,12 @@
         let startName = JSON.parse(localStorage.getItem("startName"));
         let endName = JSON.parse(localStorage.getItem("endName"));
         let direction = JSON.parse(localStorage.getItem("direction"));
-        console.log(startName, direction);
+
         let accesstokenStr = $("#accesstoken").text();
         let accesstoken = JSON.parse(accesstokenStr);
 
         function fetchAPI() {
             $('.flex.busNum').text(busNum.name);
-            console.log(direction.direction);
 
             if (accesstoken != undefined) {
                 $.ajax({
@@ -173,11 +174,11 @@
                     },
                     async: false,
                     success: function (returnData) {
-                        console.log(returnData);
+                        // console.log(returnData);
                         let newArray = returnData.filter(function (el) {
                             return el.StopName.Zh_tw == startName.name && el.PlateNumb !== '-1';
                         });
-                      
+
                         if (newArray.length > 0) {
 
                             var lowest = Number.POSITIVE_INFINITY;
@@ -213,7 +214,7 @@
                                 success: function (data) {
                                     let allTime = [], uniqueTime = [];
 
-                                    console.log(data);
+                                    // console.log('發車',data);
                                     for (let i = 0; i < data[0].Timetables.length; i++) {
                                         allTime.push(data[0].Timetables[i].StopTimes[0].ArrivalTime);
                                     }
@@ -270,14 +271,25 @@
             method: "GET",
             datatype: "json",
             success: function (address) {
-                console.log(address);
+                // console.log('now position',address);
                 if (address.results[0].address_components.slice(-4)[1].long_name == '台北市') {
                     cityName_Start = '臺北市';
                 } else {
                     cityName_Start = address.results[0].address_components.slice(-4)[1].long_name; //縣市 
                 }
-                $('.place.now').text(address.results[0].address_components.slice(-4)[0].long_name);
+
+                //google 經緯轉地址 若出現簡體字
+                let area = address.results[0].address_components.slice(-4)[0].long_name;
+                if( area.includes('区')){
+                    $('.place.now').text(area.split('区')[0]+'區');//區域
+                    // console.log(area.split('区')[0]);
+                }else{
+                    $('.place.now').text(address.results[0].address_components.slice(-4)[0].long_name);//區域
+                }
+
+                cityNum_Start = $('.place.now').text();//為了換區抓API，再把原區域找回
                 weatherNow();//溫度、天氣
+                console.log(address.results[0].address_components);
             }
         });
 
@@ -287,15 +299,25 @@
             method: "GET",
             datatype: "json",
             success: function (address) {
-               console.log(address);
+                // console.log('end position',address);
                 if (address.results[0].address_components.slice(-4)[1].long_name == '台北市') {
                     cityName_End = '臺北市';
                 } else {
                     cityName_End = address.results[0].address_components.slice(-4)[1].long_name; //縣市 
                 }
 
-                $('.place.end').text(address.results[0].address_components.slice(-4)[0].long_name);//區域
+                //google 經緯轉地址 若出現簡體字
+                let area = address.results[0].address_components.slice(-4)[0].long_name;
+                if( area.includes('区')){
+                    $('.place.end').text(area.split('区')[0]+'區');//區域
+                    // console.log(area.split('区')[0]);
+                }else{
+                    $('.place.end').text(address.results[0].address_components.slice(-4)[0].long_name);//區域
+                }
+                
+                cityNum_End = $('.place.end').text();//為了換區抓API，再把原區域找回
                 weatherEnd();//溫度、天氣
+
             }
         });
 
@@ -304,7 +326,7 @@
         function img(weather, place) {
             let str = String(weather);
 
-            if (str.includes("陰")||str.includes("雲")) {
+            if (str.includes("陰") || str.includes("雲")) {
                 if (place == 'now') {
                     $('.img.now').attr('src', 'img/cloudy.svg');
                 } else {
@@ -332,17 +354,20 @@
                 method: "GET",
                 datatype: "json",
                 success: function (res) {
-                    let number = '';
-                    let text = $('.place.now').text();
 
-                    switch (text) {
-                        case "大同區": $('.place.now').text('中正區');
-                            break;
-                        case "萬華區": $('.place.now').text('中正區');
-                            break;
-                        case '中山區': $('.place.now').text('松山區');
-                            break;
+                    let number;
+
+                    if (cityName_Start == '臺北市' && $('.place.now').text() == '大同區' ||
+                        cityName_Start == '臺北市' && $('.place.now').text() == '萬華區') {
+                        $('.place.now').text('中正區');
+                    } else if (cityName_Start == '臺北市' && $('.place.now').text() == '中山區') {
+                        $('.place.now').text('松山區');
+                    }else if(cityName_Start == '新北市' && $('.place.now').text() == '泰山區'){
+                        $('.place.now').text('新莊區');
+                    }else if(cityName_Start == '基隆市' && $('.place.now').text() == '信義區'){
+                        $('.place.now').text('中正區');
                     }
+
 
                     for (let i = 0; i < res.records.Station.length; i++) {
                         if (res.records.Station[i].GeoInfo.CountyName == cityName_Start &&
@@ -351,12 +376,13 @@
                         }
                     }
 
+                    if (number != undefined) {
 
-                    if (number != '') {
                         $('.temperature.now').text(Math.round(res.records.Station[number].WeatherElement.AirTemperature));//AirTemperature
                         img(res.records.Station[number].WeatherElement.Weather, 'now');//img
                         console.log(res.records.Station[number].WeatherElement.Weather);
-                       
+                        $('.place.now').text(cityNum_Start);
+
                     } else {
                         startOtherAPI();
                     }
@@ -377,13 +403,14 @@
                                 res.records.Station[i].GeoInfo.TownName == $('.place.now').text()) {
                                 $('.temperature.now').text(Math.round(res.records.Station[i].WeatherElement.AirTemperature));//AirTemperature
                                 img(res.records.Station[i].WeatherElement.Weather, 'now');//img
-                                console.log(res.records.Station[i].WeatherElement.Weather,res.records.Station[i].WeatherElement.AirTemperature);
-                                
+                                console.log(res.records.Station[i].WeatherElement.Weather, res.records.Station[i].WeatherElement.AirTemperature);
+                                $('.place.now').text(cityNum_Start);
                             }
                         }
                     }
                 });
             }
+
         }
 
 
@@ -393,17 +420,17 @@
                 method: "GET",
                 datatype: "json",
                 success: function (res) {
+                    let number;
 
-                    let number = '';
-                    let text = $('.place.end').text();
-
-                    switch (text) {
-                        case "大同區": $('.place.now').text('中正區');
-                            break;
-                        case "萬華區": $('.place.now').text('中正區');
-                            break;
-                        case '中山區': $('.place.now').text('松山區');
-                            break;
+                    if (cityName_End == '臺北市' && $('.place.end').text() == '大同區' ||
+                    cityName_End == '臺北市' && $('.place.end').text() == '萬華區') {
+                        $('.place.end').text('中正區');
+                    } else if (cityName_End == '臺北市' && $('.place.end').text() == '中山區') {
+                        $('.place.end').text('松山區');
+                    }else if(cityName_End == '新北市' && $('.place.end').text() == '泰山區'){
+                        $('.place.end').text('新莊區');
+                    }else if(cityName_End == '基隆市' && $('.place.end').text() == '信義區'){
+                        $('.place.end').text('中正區');
                     }
 
                     for (let i = 0; i < res.records.Station.length; i++) {
@@ -412,18 +439,19 @@
                             number = i;
                         }
                     }
+                    console.log(cityNum_End);
 
-
-                    if (number != '') {
+                    if (number != undefined) {
                         $('.temperature.end').text(Math.round(res.records.Station[number].WeatherElement.AirTemperature));//AirTemperature
                         img(res.records.Station[number].WeatherElement.Weather, 'end');//img
                         console.log(res.records.Station[number].WeatherElement.Weather);
+                        $('.place.end').text(cityNum_End);
                         return
                     } else {
                         endOtherAPI();
                         return
                     }
-                  
+
                 }
             });
 
@@ -438,9 +466,10 @@
 
                             if (res.records.Station[i].GeoInfo.CountyName == cityName_End &&
                                 res.records.Station[i].GeoInfo.TownName == $('.place.end').text()) {
-                                // console.log('A0001 end', res.records.Station[i]);
+                                console.log('A0001 end', res.records.Station[i]);
                                 $('.temperature.end').text(Math.round(res.records.Station[i].WeatherElement.AirTemperature));//AirTemperature
                                 img(res.records.Station[i].WeatherElement.Weather, 'end');//img
+                                $('.place.end').text(cityNum_End);
                                 return
                             }
                         }
@@ -451,7 +480,7 @@
         }
 
 
- 
+
 
     </script>
 </body>

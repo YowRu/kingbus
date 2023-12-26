@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,7 +20,6 @@
             <input type="text" class="busNm" placeholder="請輸入車號" oninput="value=value.replace(/[^\d]/g,'')" />
           </p>
           <div class="pop"></div>
-          <!-- <input type="text" class="stopName" placeholder="請輸入站名" value="華山文創園區"> -->
           <div class="btn purple">登入</div>
         </div>
       </div>
@@ -67,7 +65,7 @@
             });
 
             $.each(uniqueNames, function (i, el) {
-              $('.pop').append('<div class="wayWP"><span>' + uniqueNames[i] + '<span></div>');
+              $('.pop').append('<div class="wayWP"><span>' + uniqueNames[i] + '</span></div>');
             });
 
             //抓支線的起訖
@@ -75,7 +73,7 @@
               for (let i = 0; i < address.length; i++) {
                 let start, last, end;
                 if (address[i].SubRouteName.Zh_tw == uniqueNames[num]) {
-                  console.log(address[i]);
+                
                   start = address[i].Stops[0].StopName.Zh_tw;
                   let stopNum = address[i].Stops.length
                   $('.pop div').eq(num).append('<p class="flex way"><input type="radio" name="direction" value="' + i + '"/><a class="start" position="' + address[i].Stops[0].StopPosition.PositionLat + ',' + address[i].Stops[0].StopPosition.PositionLon + '">' + start + '</a>→<a class="end" position="' + address[i].Stops[stopNum - 1].StopPosition.PositionLat + ',' + address[i].Stops[stopNum - 1].StopPosition.PositionLon + '">'  + address[i].Stops[stopNum - 1].StopName.Zh_tw + '</a></p>');
@@ -117,7 +115,7 @@
         localStorage.setItem("direction", JSON.stringify(d));
 
 
-        window.location = "https://yowru.github.io/kingbus/API.html";
+        window.location = "http://localhost:8888/23.12.26_kingbus/API.html";
       } else if ($('.busNm').val() == '') {
         alert('請填寫 車號');
       } else if (!$('input[type="radio"]:checked').length > 0) {

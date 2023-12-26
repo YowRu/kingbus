@@ -50,7 +50,7 @@ header .btnWP {
 }
 
 .right {
-  width: 500px;
+  width: 50vw;
   height: 85vh;
   background-color: #fff;
   display: flex;
@@ -115,10 +115,12 @@ header .btnWP {
 
 .right .pop .wayWP span {
   margin: 0 5px;
+  padding: 0 5px;
   background-color: #e3e1ff;
   color: #675cf6;
   width: 88px;
   border-radius: 5px;
+  text-align: center;
 }
 
 .right p.flex {

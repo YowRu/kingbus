@@ -40,7 +40,7 @@
                     </div>
                     <div class="down">
                         <div class="air">空汙</div>
-                        <div class="text">53</div>
+                        <div class="text now"><img src="img/nosmile_white.svg" alt=""></div>
                     </div>
                 </div>
                 <div class="place now"></div>
@@ -53,7 +53,7 @@
                     </div>
                     <div class="down">
                         <div class="air">空汙</div>
-                        <div class="text">51</div>
+                        <div class="text end"><img src="img/nosmile_white.svg" alt=""></div>
                     </div>
                 </div>
                 <div class="place end" id="placeEnd"></div>
@@ -108,25 +108,20 @@
         $('.side').width($(window).width() * 0.06);
 
         //fetch time
-        let dayNow = new Date();
-        let day = (dayNow.getDate() < 10 ? '0' : '') + dayNow.getDate();
-        let month = dayNow.getMonth();
-        let year = dayNow.getFullYear();
-
         function time() {
             let dayNow = new Date();
             let day = (dayNow.getDate() < 10 ? '0' : '') + dayNow.getDate();
-            let month = dayNow.getMonth();
+            let month = dayNow.getMonth() + 1;
             let year = dayNow.getFullYear();
             let hour = (dayNow.getHours() < 10 ? '0' : '') + dayNow.getHours();
             let minutes = (dayNow.getMinutes() < 10 ? '0' : '') + dayNow.getMinutes();
             $('header .date .year').text(year);
-            $('header .date .month').text(month + 1);
+            $('header .date .month').text(month < 10 ? '0' + month : month);
             $('header .date .day').text(day);
             $('header .right .time').text(`${hour}:${minutes}`);
         }
         time();
-        window.setInterval((() => time()), 10000);
+        window.setInterval((() => time()), 60000);
 
         function GetAuthorizationHeader() {
             const parameter = {
@@ -147,7 +142,10 @@
                     $("#accesstoken").text(JSON.stringify(data));
 
                 },
-                error: function (xhr, textStatus, thrownError) { }
+                error: function (xhr, textStatus, thrownError) {
+                    console.log('errorStatus:', textStatus);
+                    console.log('Error:', thrownError);
+                }
             });
         }
 
@@ -280,16 +278,21 @@
 
                 //google 經緯轉地址 若出現簡體字
                 let area = address.results[0].address_components.slice(-4)[0].long_name;
-                if( area.includes('区')){
-                    $('.place.now').text(area.split('区')[0]+'區');//區域
+                if (area.includes('区')) {
+                    $('.place.now').text(area.split('区')[0] + '區');//區域
                     // console.log(area.split('区')[0]);
-                }else{
+                } else {
                     $('.place.now').text(address.results[0].address_components.slice(-4)[0].long_name);//區域
                 }
 
                 cityNum_Start = $('.place.now').text();//為了換區抓API，再把原區域找回
                 weatherNow();//溫度、天氣
+                AQI();
                 console.log(address.results[0].address_components);
+            },
+            error: function (xhr, textStatus, thrownError) {
+                console.log('errorStatus:', textStatus);
+                console.log('Error:', thrownError);
             }
         });
 
@@ -308,16 +311,20 @@
 
                 //google 經緯轉地址 若出現簡體字
                 let area = address.results[0].address_components.slice(-4)[0].long_name;
-                if( area.includes('区')){
-                    $('.place.end').text(area.split('区')[0]+'區');//區域
+                if (area.includes('区')) {
+                    $('.place.end').text(area.split('区')[0] + '區');//區域
                     // console.log(area.split('区')[0]);
-                }else{
+                } else {
                     $('.place.end').text(address.results[0].address_components.slice(-4)[0].long_name);//區域
                 }
-                
+
                 cityNum_End = $('.place.end').text();//為了換區抓API，再把原區域找回
                 weatherEnd();//溫度、天氣
-
+                AQI();
+            },
+            error: function (xhr, textStatus, thrownError) {
+                console.log('errorStatus:', textStatus);
+                console.log('Error:', thrownError);
             }
         });
 
@@ -362,9 +369,9 @@
                         $('.place.now').text('中正區');
                     } else if (cityName_Start == '臺北市' && $('.place.now').text() == '中山區') {
                         $('.place.now').text('松山區');
-                    }else if(cityName_Start == '新北市' && $('.place.now').text() == '泰山區'){
+                    } else if (cityName_Start == '新北市' && $('.place.now').text() == '泰山區') {
                         $('.place.now').text('新莊區');
-                    }else if(cityName_Start == '基隆市' && $('.place.now').text() == '信義區'){
+                    } else if (cityName_Start == '基隆市' && $('.place.now').text() == '信義區') {
                         $('.place.now').text('中正區');
                     }
 
@@ -387,6 +394,10 @@
                         startOtherAPI();
                     }
 
+                },
+                error: function (xhr, textStatus, thrownError) {
+                    console.log('errorStatus:', textStatus);
+                    console.log('Error:', thrownError);
                 }
             });
 
@@ -403,7 +414,7 @@
                                 res.records.Station[i].GeoInfo.TownName == $('.place.now').text()) {
                                 $('.temperature.now').text(Math.round(res.records.Station[i].WeatherElement.AirTemperature));//AirTemperature
                                 img(res.records.Station[i].WeatherElement.Weather, 'now');//img
-                                console.log(res.records.Station[i].WeatherElement.Weather, res.records.Station[i].WeatherElement.AirTemperature);
+                                console.log(res.records.Station[i], res.records.Station[i].WeatherElement.Weather, res.records.Station[i].WeatherElement.AirTemperature);
                                 $('.place.now').text(cityNum_Start);
                             }
                         }
@@ -423,13 +434,13 @@
                     let number;
 
                     if (cityName_End == '臺北市' && $('.place.end').text() == '大同區' ||
-                    cityName_End == '臺北市' && $('.place.end').text() == '萬華區') {
+                        cityName_End == '臺北市' && $('.place.end').text() == '萬華區') {
                         $('.place.end').text('中正區');
                     } else if (cityName_End == '臺北市' && $('.place.end').text() == '中山區') {
                         $('.place.end').text('松山區');
-                    }else if(cityName_End == '新北市' && $('.place.end').text() == '泰山區'){
+                    } else if (cityName_End == '新北市' && $('.place.end').text() == '泰山區') {
                         $('.place.end').text('新莊區');
-                    }else if(cityName_End == '基隆市' && $('.place.end').text() == '信義區'){
+                    } else if (cityName_End == '基隆市' && $('.place.end').text() == '信義區') {
                         $('.place.end').text('中正區');
                     }
 
@@ -452,6 +463,10 @@
                         return
                     }
 
+                },
+                error: function (xhr, textStatus, thrownError) {
+                    console.log('errorStatus:', textStatus);
+                    console.log('Error:', thrownError);
                 }
             });
 
@@ -474,14 +489,77 @@
                             }
                         }
 
+                    },
+                    error: function (xhr, textStatus, thrownError) {
+                        console.log('errorStatus:', textStatus);
+                        console.log('Error:', thrownError);
                     }
                 });
             }
         }
 
 
+        //AQI API
+        function AQI() {
+            $.ajax({
+                url: ' https://data.moenv.gov.tw/api/v2/aqx_p_133?api_key=339436ec-354d-4298-8b8c-1bd974777345',
+                method: "GET",
+                datatype: "json",
+                success: function (address) {
+                    console.log('AQI', address);
+                    let dayNow = new Date();
+                    let hour = dayNow.getHours();
+                    let eachPM2_S = [], eachPM2_E = [];
+                    let PM2_S = address.records.filter(function (el) {
+                        return el.itemengname == 'PM2.5' && el.county == cityName_Start;
+                    });
+                    let PM2_E = address.records.filter(function (el) {
+                        return el.itemengname == 'PM2.5' && el.county == cityName_End;
+                    });
 
+                    //now所有PM2.5
+                    $.each(PM2_S, function (i, el) {
+                        if ($.inArray(el.concentration, eachPM2_S) === -1) eachPM2_S.push(el.concentration);
+                    });
+                    //end所有PM2.5
+                    $.each(PM2_E, function (i, el) {
+                        if ($.inArray(el.concentration, eachPM2_E) === -1) eachPM2_E.push(el.concentration);
+                    });
 
+                    //找出array最大值
+                    let startpm2 = eachPM2_S.reduce((a, b) => Math.max(a, b), -Infinity);
+                    let endpm2 = eachPM2_E.reduce((a, b) => Math.max(a, b), -Infinity);
+                   console.log(startpm2,endpm2);
+                    
+                    if (startpm2 != 'x') {
+                        $('.content .down .text.now img').remove();
+                        if (parseInt(startpm2) < 15.4) {
+                            $('.content .down .text.now').append('<img src="img/smile_white.svg" alt="" class="img now">');
+                        } else if (15.4 < parseInt(startpm2) < 35.5) {
+                            $('.content .down .text.now').append('<img src="img/nosmile_white.svg" alt="" class="img now">');
+                        } else if (35.4 < parseInt(startpm2) < 54.5) {
+                            $('.content .down .text.now').append('<img src="img/sad_white.svg" alt="" class="img now">');
+                        }
+                    } 
+                    if (endpm2 != 'x') {
+                        $('.content .down .text.end img').remove();
+                        if (parseInt(endpm2) < 15.4) {
+                            $('.content .down .text.end').append('<img src="img/smile_white.svg" alt="" class="img now">');
+                        } else if (15.4 < parseInt(endpm2) < 35.5) {
+                            $('.content .down .text.end').append('<img src="img/nosmile_white.svg" alt="" class="img now">');
+                        } else if (35.4 < parseInt(endpm2) < 54.5) {
+                            $('.content .down .text.end').append('<img src="img/sad_white.svg" alt="" class="img now">');
+                        }
+                    } 
+                    console.log(cityNum_End);
+                },
+                error: function (xhr, textStatus, thrownError) {
+                    console.log('errorStatus:', textStatus);
+                    console.log('Error:', thrownError);
+                }
+            });
+
+        }
     </script>
 </body>
 
